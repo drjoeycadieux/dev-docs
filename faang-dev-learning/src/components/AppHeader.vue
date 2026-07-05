@@ -10,6 +10,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:activeTab'])
 
+const isMenuOpen = ref(false)
+
 const tabs = [
   { id: 'home', label: 'Home', icon: '🏠' },
   { id: 'learning-path', label: 'Learning Path', icon: '🗺️' },
@@ -20,6 +22,11 @@ const tabs = [
 
 const setActiveTab = (tabId) => {
   emit('update:activeTab', tabId)
+  isMenuOpen.value = false
+}
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
 }
 </script>
 
@@ -31,7 +38,14 @@ const setActiveTab = (tabId) => {
         <h1>FAANG Dev Learning</h1>
       </div>
       
-      <nav class="nav">
+      <!-- Hamburger Menu Button -->
+      <button class="hamburger-btn" @click="toggleMenu" :class="{ active: isMenuOpen }" aria-label="Toggle menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      
+      <nav class="nav" :class="{ 'nav-open': isMenuOpen }">
         <button
           v-for="tab in tabs"
           :key="tab.id"
@@ -63,14 +77,15 @@ const setActiveTab = (tabId) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   gap: 1rem;
+  position: relative;
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-shrink: 0;
 }
 
 .logo-icon {
@@ -81,12 +96,14 @@ const setActiveTab = (tabId) => {
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
+  white-space: nowrap;
 }
 
 .nav {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  transition: all 0.3s ease;
 }
 
 .nav-btn {
@@ -102,6 +119,7 @@ const setActiveTab = (tabId) => {
   transition: all 0.3s ease;
   font-size: 0.95rem;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .nav-btn:hover {
@@ -119,23 +137,118 @@ const setActiveTab = (tabId) => {
   font-size: 1.2rem;
 }
 
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .logo {
-    justify-content: center;
-  }
-  
-  .nav {
-    justify-content: center;
+/* Hamburger Menu Button */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 101;
+  flex-shrink: 0;
+}
+
+.hamburger-line {
+  width: 100%;
+  height: 3px;
+  background: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburger-btn.active .hamburger-line:nth-child(1) {
+  transform: translateY(10.5px) rotate(45deg);
+}
+
+.hamburger-btn.active .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-btn.active .hamburger-line:nth-child(3) {
+  transform: translateY(-10.5px) rotate(-45deg);
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 992px) {
+  .header {
+    padding: 1rem 1.5rem;
   }
   
   .nav-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .hamburger-btn {
+    display: flex;
+  }
+  
+  .nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+    max-height: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .nav.nav-open {
+    max-height: 500px;
+    padding: 1rem 0;
+  }
+  
+  .nav-btn {
+    width: calc(100% - 2rem);
+    margin: 0.25rem 1rem;
+    padding: 0.875rem 1.25rem;
+    justify-content: flex-start;
+    border-radius: 8px;
+  }
+  
+  .nav-btn:hover {
+    transform: translateX(4px);
+  }
+  
+  .logo h1 {
+    font-size: 1.25rem;
+  }
+  
+  .logo-icon {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 0.625rem 0.875rem;
+  }
+  
+  .logo h1 {
+    font-size: 1.1rem;
+  }
+  
+  .logo-icon {
+    font-size: 1.5rem;
+  }
+  
+  .nav-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
   }
 }
 </style>
