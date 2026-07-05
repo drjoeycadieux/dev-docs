@@ -1,18 +1,33 @@
 {
   "name": "faang-dev-learning",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "Your comprehensive learning platform to master coding, algorithms, system design, and ace your technical interviews at FAANG companies.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix"
   },
   "dependencies": {
-    "vue": "^3.5.32"
+    "vue": "^3.5.39",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.5",
-    "vite": "^8.0.4"
-  }
+    "vite": "^8.0.4",
+    "eslint": "^9.32.0",
+    "eslint-plugin-vue": "^10.4.0"
+  },
+  "keywords": [
+    "faang",
+    "interview",
+    "coding",
+    "algorithms",
+    "system-design",
+    "learning"
+  ],
+  "author": "",
+  "license": "MIT"
 }
