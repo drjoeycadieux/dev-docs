@@ -49,9 +49,9 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# SPA redirect rule for Vue Router
+# SPA redirect rule for Vue Router - only apply to non-existing files
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = true
+  force = false
