@@ -1,4 +1,3 @@
-```
 # Configuration files
-netlify.toml
-```
+# netlify.toml - Uncomment if you want to exclude it from git
+# netlify.toml
