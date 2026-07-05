@@ -1,6 +1,9 @@
 # Netlify configuration for faang-dev-learning
 
 [build]
+  # Base directory where package.json is located
+  base = "faang-dev-learning"
+  
   # Directory to publish (relative to base)
   publish = "dist"
   
