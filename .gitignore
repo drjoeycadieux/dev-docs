@@ -1,8 +1,4 @@
-```toml
-[build]
-publish = "dist"
-command = "npm run build"
-
-[dev]
-port = 8888
+```
+# Configuration files
+netlify.toml
 ```
