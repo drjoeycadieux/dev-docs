@@ -5,6 +5,8 @@
   publish = "dist"
   
   # Command to build the project
+  # Run build from the subfolder containing the site
+  base = "faang-dev-learning"
   command = "npm run build"
 
 # Environment variables for production
