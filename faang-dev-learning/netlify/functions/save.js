@@ -47,6 +47,19 @@ export const handler = async (event) => {
     })
   }
 
+  const requiredDatabaseVariables = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME']
+  const missingDatabaseVariables = requiredDatabaseVariables.filter(
+    (name) => !process.env[name]
+  )
+
+  if (missingDatabaseVariables.length > 0) {
+    console.error('Missing database configuration:', missingDatabaseVariables)
+    return response(500, {
+      success: false,
+      message: 'Contact service is not configured'
+    })
+  }
+
   let connection
 
   try {
@@ -71,8 +84,13 @@ export const handler = async (event) => {
       id: result.insertId
     })
   } catch (error) {
-    console.error('Contact submission failed:', error)
-    return response(500, { success: false, message: 'Failed to save user' })
+    console.error('Contact submission failed:', error.code || error.message)
+    return response(500, {
+      success: false,
+      message: error.code?.startsWith('ER_')
+        ? 'Database rejected the contact submission'
+        : 'Database connection failed'
+    })
   } finally {
     await connection?.end()
   }
