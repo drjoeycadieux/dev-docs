@@ -7,6 +7,7 @@ import TopicCard from './components/TopicCard.vue'
 import ResourcesSection from './components/ResourcesSection.vue'
 import InterviewPrep from './components/InterviewPrep.vue'
 import Footer from './components/Footer.vue'
+import Contact from './components/Contact.vue'
 
 const activeTab = ref('home')
 </script>
@@ -23,7 +24,8 @@ const activeTab = ref('home')
       <InterviewPrep v-if="activeTab === 'interview'" />
     </main>
 
-    <Test v-if="activeTab === 'test'" />
+ <Contact />
+    
 
     <Footer />
   </div>
