@@ -1,7 +1,17 @@
 <script setup>
 import { computed, onBeforeUnmount, ref } from 'vue'
 
-const currentUser = ref(JSON.parse(localStorage.getItem('learnloop-user') || 'null'))
+const loadStoredUser = () => {
+  try {
+    const storedUser = JSON.parse(localStorage.getItem('learnloop-user') || 'null')
+    return storedUser?.email && storedUser?.name ? storedUser : null
+  } catch {
+    localStorage.removeItem('learnloop-user')
+    return null
+  }
+}
+
+const currentUser = ref(loadStoredUser())
 const videos = ref(JSON.parse(localStorage.getItem('learnloop-videos') || '[]'))
 const activeView = ref('library')
 const authMode = ref('login')
@@ -15,6 +25,7 @@ const selectedVideo = ref(null)
 const search = ref('')
 const fileInput = ref(null)
 const objectUrls = []
+const maxVideoSize = 4 * 1024 * 1024 * 1024
 
 const demoVideos = [
   { id: 'demo-1', title: 'Build your first React component', description: 'A calm walkthrough of props, state, and composition.', category: 'Frontend', author: 'Maya Chen', duration: '18 min', accent: 'coral' },
@@ -31,7 +42,9 @@ const myVideos = computed(() => videos.value.filter((video) => video.owner === c
 
 const persist = () => {
   localStorage.setItem('learnloop-videos', JSON.stringify(videos.value))
-  if (currentUser.value) localStorage.setItem('learnloop-user', JSON.stringify(currentUser.value))
+  if (currentUser.value) {
+    localStorage.setItem('learnloop-user', JSON.stringify(currentUser.value))
+  }
 }
 
 const submitAuth = async () => {
@@ -83,6 +96,10 @@ const selectFile = (event) => {
   uploadError.value = ''
   if (file && !file.type.startsWith('video/')) {
     uploadError.value = 'Please choose a video file.'
+    return
+  }
+  if (file && file.size > maxVideoSize) {
+    uploadError.value = 'Videos must be 4 GB or smaller.'
     return
   }
   uploadForm.value.file = file || null
@@ -150,7 +167,7 @@ onBeforeUnmount(() => objectUrls.forEach((url) => URL.revokeObjectURL(url)))
         <p v-if="!filteredVideos.length" class="empty-state">No lessons match “{{ search }}”. Try another search.</p>
       </section>
 
-      <section v-else-if="activeView === 'upload'" class="upload-view"><button class="back-link" @click="activeView = 'library'">← Back to lessons</button><div class="upload-heading"><p class="eyebrow">SHARE YOUR KNOWLEDGE</p><h1>Publish a lesson.</h1><p>Give someone a clearer path through the thing you just figured out.</p></div><div class="upload-layout"><form class="upload-form" @submit.prevent="publishVideo"><label>Lesson title<input v-model="uploadForm.title" type="text" placeholder="e.g. Build your first API" maxlength="80" /></label><label>Description<textarea v-model="uploadForm.description" rows="4" placeholder="What will people take away?"></textarea></label><label>Topic<select v-model="uploadForm.category"><option>Frontend</option><option>Backend</option><option>Data</option><option>System design</option><option>Career</option></select></label><label class="file-picker"><span class="upload-icon">↑</span><strong>{{ uploadForm.file ? uploadForm.file.name : 'Choose a video file' }}</strong><small>MP4, WebM or MOV · up to 500 MB</small><input ref="fileInput" type="file" accept="video/*" @change="selectFile" /></label><p v-if="uploadError" class="form-error">{{ uploadError }}</p><button class="publish-button" type="submit">Publish lesson <span>→</span></button></form><aside class="upload-aside"><span class="aside-number">01</span><h2>Make it useful.</h2><p>Show the real process. A focused 10-minute lesson beats an hour of polished slides.</p><span class="aside-number">02</span><h2>Keep it human.</h2><p>Share the decisions, mistakes, and shortcuts you wish you had at the start.</p></aside></div></section>
+      <section v-else-if="activeView === 'upload'" class="upload-view"><button class="back-link" @click="activeView = 'library'">← Back to lessons</button><div class="upload-heading"><p class="eyebrow">SHARE YOUR KNOWLEDGE</p><h1>Publish a lesson.</h1><p>Give someone a clearer path through the thing you just figured out.</p></div><div class="upload-layout"><form class="upload-form" @submit.prevent="publishVideo"><label>Lesson title<input v-model="uploadForm.title" type="text" placeholder="e.g. Build your first API" maxlength="80" /></label><label>Description<textarea v-model="uploadForm.description" rows="4" placeholder="What will people take away?"></textarea></label><label>Topic<select v-model="uploadForm.category"><option>Frontend</option><option>Backend</option><option>Data</option><option>System design</option><option>Career</option></select></label><label class="file-picker"><span class="upload-icon">↑</span><strong>{{ uploadForm.file ? uploadForm.file.name : 'Choose a video file' }}</strong><small>MP4, WebM or MOV · up to 4 GB</small><input ref="fileInput" type="file" accept="video/*" @change="selectFile" /></label><p v-if="uploadError" class="form-error">{{ uploadError }}</p><button class="publish-button" type="submit">Publish lesson <span>→</span></button></form><aside class="upload-aside"><span class="aside-number">01</span><h2>Make it useful.</h2><p>Show the real process. A focused 10-minute lesson beats an hour of polished slides.</p><span class="aside-number">02</span><h2>Keep it human.</h2><p>Share the decisions, mistakes, and shortcuts you wish you had at the start.</p></aside></div></section>
 
       <section v-else class="my-videos-view"><div class="intro-row"><div><p class="eyebrow">YOUR LIBRARY</p><h1>Your lessons.</h1><p class="intro-copy">Keep building your teaching practice.</p></div><button class="upload-button large" @click="activeView = 'upload'">＋ Upload lesson</button></div><div v-if="myVideos.length" class="video-grid"><article v-for="video in myVideos" :key="video.id" class="video-card"><div :class="['thumbnail', video.accent]" @click="openVideo(video)"><span class="play-button">▶</span><span class="duration">{{ video.duration }}</span></div><div class="video-info"><div class="video-author"><span class="mini-avatar">{{ video.author.charAt(0) }}</span><span>Published by you</span></div><h2>{{ video.title }}</h2><p>{{ video.description }}</p><button class="delete-link" @click.stop="deleteVideo(video)">Remove lesson</button></div></article></div><div v-else class="empty-panel"><span>◌</span><h2>Your first lesson is waiting.</h2><p>Share a useful idea with the community and it will appear here.</p><button class="publish-button" @click="activeView = 'upload'">Upload your first lesson <span>→</span></button></div></section>
     </main>
