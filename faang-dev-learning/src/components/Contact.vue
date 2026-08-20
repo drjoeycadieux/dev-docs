@@ -15,13 +15,14 @@ const form = ref({
 
 const result = ref('')
 const loading = ref(false)
+const contactApiUrl = import.meta.env.VITE_CONTACT_API_URL || '/api/save.php'
 
 const submitForm = async () => {
   result.value = ''
   loading.value = true
 
   try {
-    const response = await fetch('https://dev-learning-code.netlify.app/api/save.php', {
+    const response = await fetch(contactApiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -29,7 +30,14 @@ const submitForm = async () => {
       body: JSON.stringify(form.value)
     })
 
-    const data = await response.json()
+    const responseText = await response.text()
+    let data
+
+    try {
+      data = JSON.parse(responseText)
+    } catch {
+      throw new Error(`The contact service returned an invalid response (HTTP ${response.status})`)
+    }
 
     if (!response.ok || !data.success) {
       throw new Error(data.message || 'Request failed')
@@ -51,7 +59,9 @@ const submitForm = async () => {
 
   } catch (error) {
     console.error(error)
-    result.value = error.message
+    result.value = error instanceof TypeError
+      ? 'Unable to reach the contact service. Check the API URL and CORS configuration.'
+      : error.message
   } finally {
     loading.value = false
   }
