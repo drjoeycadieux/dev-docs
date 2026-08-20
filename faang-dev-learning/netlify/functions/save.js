@@ -56,7 +56,7 @@ export const handler = async (event) => {
     console.error('Missing database configuration:', missingDatabaseVariables)
     return response(500, {
       success: false,
-      message: 'Contact service is not configured'
+      message: `Contact service is missing: ${missingDatabaseVariables.join(', ')}`
     })
   }
 
