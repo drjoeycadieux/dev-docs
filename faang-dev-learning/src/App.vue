@@ -23,6 +23,8 @@ const activeTab = ref('home')
       <InterviewPrep v-if="activeTab === 'interview'" />
     </main>
 
+    <Test v-if="activeTab === 'test'" />
+
     <Footer />
   </div>
 </template>
