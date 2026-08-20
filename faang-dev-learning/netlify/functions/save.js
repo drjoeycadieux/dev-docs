@@ -47,10 +47,16 @@ export const handler = async (event) => {
     })
   }
 
-  const requiredDatabaseVariables = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME']
-  const missingDatabaseVariables = requiredDatabaseVariables.filter(
-    (name) => !process.env[name]
-  )
+  const databaseConfig = {
+    host: process.env.DB_HOST || process.env.VITE_DB_HOST,
+    user: process.env.DB_USER || process.env.VITE_DB_USER,
+    password: process.env.DB_PASSWORD || process.env.VITE_DB_PASSWORD,
+    database: process.env.DB_NAME || process.env.VITE_DB_NAME,
+    port: Number(process.env.DB_PORT || process.env.VITE_DB_PORT || 3306)
+  }
+  const missingDatabaseVariables = Object.entries(databaseConfig)
+    .filter(([name, value]) => name !== 'port' && !value)
+    .map(([name]) => name)
 
   if (missingDatabaseVariables.length > 0) {
     console.error('Missing database configuration:', missingDatabaseVariables)
@@ -63,13 +69,7 @@ export const handler = async (event) => {
   let connection
 
   try {
-    connection = await mysql.createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      port: Number(process.env.DB_PORT || 3306)
-    })
+    connection = await mysql.createConnection(databaseConfig)
 
     const [result] = await connection.execute(
       `INSERT INTO users (
