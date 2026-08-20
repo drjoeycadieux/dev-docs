@@ -33,6 +33,13 @@ export const handler = async (event) => {
     const config = databaseConfig()
     if (!config.host || !config.user || !config.database) return response(500, { success: false, message: 'Database configuration is missing' })
     connection = await mysql.createConnection(config)
+    await connection.execute(`CREATE TABLE IF NOT EXISTS auth_users (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(120) NOT NULL,
+      email VARCHAR(255) NOT NULL UNIQUE,
+      password_hash VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`)
     const [result] = await connection.execute('INSERT INTO auth_users (name, email, password_hash) VALUES (?, ?, ?)', [name, email, await bcrypt.hash(password, 12)])
     return response(200, { success: true, user: { id: result.insertId, name, email } })
   } catch (error) {

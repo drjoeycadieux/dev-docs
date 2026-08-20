@@ -28,6 +28,13 @@ export const handler = async (event) => {
   let connection
   try {
     connection = await mysql.createConnection(databaseConfig())
+    await connection.execute(`CREATE TABLE IF NOT EXISTS auth_users (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(120) NOT NULL,
+      email VARCHAR(255) NOT NULL UNIQUE,
+      password_hash VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`)
     const [rows] = await connection.execute('SELECT id, name, email, password_hash FROM auth_users WHERE email = ? LIMIT 1', [email])
     const user = rows[0]
     if (!user || !(await bcrypt.compare(password, user.password_hash))) return response(401, { success: false, message: 'That email or password does not match' })

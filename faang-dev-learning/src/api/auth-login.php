@@ -11,6 +11,14 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 }
 
 require_once "db.php";
+$conn->query("CREATE TABLE IF NOT EXISTS auth_users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
 $data = json_decode(file_get_contents("php://input"), true) ?? [];
 $email = strtolower(trim($data["email"] ?? ""));
 $password = $data["password"] ?? "";
