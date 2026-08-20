@@ -10,11 +10,11 @@ const headers = {
 
 const response = (statusCode, body) => ({ statusCode, headers, body: JSON.stringify(body) })
 const databaseConfig = () => ({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT || 3306)
+  host: process.env.DB_HOST || process.env.VITE_DB_HOST,
+  user: process.env.DB_USER || process.env.VITE_DB_USER,
+  password: process.env.DB_PASSWORD || process.env.VITE_DB_PASSWORD,
+  database: process.env.DB_NAME || process.env.VITE_DB_NAME,
+  port: Number(process.env.DB_PORT || process.env.VITE_DB_PORT || 3306)
 })
 
 export const handler = async (event) => {

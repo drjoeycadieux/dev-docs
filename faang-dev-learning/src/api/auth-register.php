@@ -24,11 +24,23 @@ if ($name === "" || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($passwo
 
 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 $stmt = $conn->prepare("INSERT INTO auth_users (name, email, password_hash) VALUES (?, ?, ?)");
+
+if (!$stmt) {
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "message" => "The auth_users table is missing. Run auth-schema.sql first."
+    ]);
+    $conn->close();
+    exit;
+}
+
 $stmt->bind_param("sss", $name, $email, $passwordHash);
 
 if (!$stmt->execute()) {
-    http_response_code($conn->errno === 1062 ? 409 : 500);
-    echo json_encode(["success" => false, "message" => $conn->errno === 1062 ? "An account with that email already exists" : "Unable to create account"]);
+    $isDuplicate = $stmt->errno === 1062;
+    http_response_code($isDuplicate ? 409 : 500);
+    echo json_encode(["success" => false, "message" => $isDuplicate ? "An account with that email already exists" : "Unable to create account"]);
     exit;
 }
 

@@ -10,11 +10,11 @@ const headers = {
 
 const response = (statusCode, body) => ({ statusCode, headers, body: JSON.stringify(body) })
 const databaseConfig = () => ({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT || 3306)
+  host: process.env.DB_HOST || process.env.VITE_DB_HOST,
+  user: process.env.DB_USER || process.env.VITE_DB_USER,
+  password: process.env.DB_PASSWORD || process.env.VITE_DB_PASSWORD,
+  database: process.env.DB_NAME || process.env.VITE_DB_NAME,
+  port: Number(process.env.DB_PORT || process.env.VITE_DB_PORT || 3306)
 })
 
 export const handler = async (event) => {
@@ -30,10 +30,12 @@ export const handler = async (event) => {
 
   let connection
   try {
-    connection = await mysql.createConnection(databaseConfig())
+    const config = databaseConfig()
+    if (!config.host || !config.user || !config.database) return response(500, { success: false, message: 'Database configuration is missing' })
+    connection = await mysql.createConnection(config)
     const [result] = await connection.execute('INSERT INTO auth_users (name, email, password_hash) VALUES (?, ?, ?)', [name, email, await bcrypt.hash(password, 12)])
     return response(200, { success: true, user: { id: result.insertId, name, email } })
   } catch (error) {
-    return response(error.code === 'ER_DUP_ENTRY' ? 409 : 500, { success: false, message: error.code === 'ER_DUP_ENTRY' ? 'An account with that email already exists' : 'Unable to create account' })
+    return response(error.code === 'ER_DUP_ENTRY' ? 409 : 500, { success: false, message: error.code === 'ER_DUP_ENTRY' ? 'An account with that email already exists' : error.code === 'ER_NO_SUCH_TABLE' ? 'The auth_users table is missing. Run auth-schema.sql first.' : 'Unable to create account' })
   } finally { await connection?.end() }
 }

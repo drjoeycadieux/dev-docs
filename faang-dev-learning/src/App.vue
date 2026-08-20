@@ -50,7 +50,13 @@ const submitAuth = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: authForm.value.name.trim(), email, password: authForm.value.password })
     })
-    const data = await response.json()
+    const responseText = await response.text()
+    let data
+    try {
+      data = JSON.parse(responseText)
+    } catch {
+      throw new Error(`Authentication endpoint returned an invalid response (HTTP ${response.status})`)
+    }
     if (!response.ok || !data.success) throw new Error(data.message || 'Authentication failed')
     currentUser.value = data.user
     authOpen.value = false
